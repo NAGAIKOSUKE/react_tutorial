@@ -24,6 +24,12 @@ function Board({ xIsNext, squares, onPlay }) {
   }
 
   const {winner, line} = calculateWinner(squares) || {};
+  let status;
+  if (winner) {
+    status = 'Winner: ' + winner;
+  } else {
+    status = 'Next player: ' + (xIsNext ? 'X' : 'O');
+  }
   const board = [];
   for (let i = 0; i < 3; i++) {
     const rowSquares = [];
