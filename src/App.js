@@ -15,21 +15,24 @@ function Board({ xIsNext, squares, onPlay }) {
       return;
     }
     const nextSquares = squares.slice();
-    if (xIsNext) {
-      nextSquares[i] = 'X';
-    } else {
-      nextSquares[i] = 'O';
-    }
+    nextSquares[i] = xIsNext ? 'X' : 'O';
     onPlay(nextSquares);
   }
 
-  const {winner, line} = calculateWinner(squares) || {};
+  const result = calculateWinner(squares);
+  const winner = result ? result.winner : null;
+  const line = result ? result.line : [];
+  const isDraw = result ? result.isDraw : false;
+
   let status;
   if (winner) {
     status = 'Winner: ' + winner;
+  } else if (isDraw) {
+    status = 'Draw';
   } else {
     status = 'Next player: ' + (xIsNext ? 'X' : 'O');
   }
+
   const board = [];
   for (let i = 0; i < 3; i++) {
     const rowSquares = [];
@@ -78,12 +81,9 @@ export default function Game() {
   }
 
   const moves = history.map((squares, move) => {
-    let description;
-    if (move > 0) {
-      description = 'Go to move #' + move;
-    } else {
-      description = 'Go to game start';
-    }
+    const description = move ?
+      'Go to move #' + move + ' (' + (move % 3) + ', ' + Math.floor(move / 3) + ')' :
+      'Go to game start';
     if (move === currentMove) {
       return <li key={move}>
         <p>{"You are at move #" + move}</p>
@@ -128,7 +128,18 @@ function calculateWinner(squares) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return { winner: squares[a], line: [a, b, c] };
+      return {
+        winner: squares[a],
+        line: [a, b, c],
+        isDraw: false
+      }
+    }
+  }
+  if (squares.filter((e) => !e).length === 0) {
+    return {
+      isDraw: true,
+      winner: null,
+      line: []
     }
   }
   return null;
